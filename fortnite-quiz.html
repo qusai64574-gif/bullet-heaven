@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnite Quiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Burbank+Big+Condensed&family=Russo+One&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Russo One', sans-serif;
+    background: #0a0a1a;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Animated background */
+  .bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(120, 0, 255, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(0, 150, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(255, 0, 100, 0.08) 0%, transparent 50%),
+      #0a0a1a;
+    z-index: 0;
+  }
+
+  .bg::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: 
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 2px, rgba(255,255,255,0.01) 4px);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 90%;
+    max-width: 700px;
+    text-align: center;
+  }
+
+  /* Start screen */
+  .start-screen h1 {
+    font-size: 4rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #ff6b00, #ff006e, #8338ec, #3a86ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    text-shadow: none;
+    filter: drop-shadow(0 0 30px rgba(255, 107, 0, 0.3));
+  }
+
+  .start-screen .subtitle {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 16px 48px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, #ff6b00, #ff006e);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(255, 107, 0, 0.6);
+  }
+
+  /* Quiz screen */
+  .quiz-screen { display: none; }
+
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .hud-item {
+    font-size: 1rem;
+    color: #ccc;
+  }
+
+  .hud-item span {
+    color: #ff6b00;
+    font-size: 1.3rem;
+  }
+
+  .timer-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    margin-bottom: 25px;
+    overflow: hidden;
+  }
+
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b00, #ff006e);
+    border-radius: 3px;
+    transition: width 0.3s linear;
+  }
+
+  .question-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 20px;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    color: #fff;
+  }
+
+  .answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .answer-btn {
+    padding: 16px 20px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .answer-btn:hover:not(.disabled) {
+    background: rgba(255, 107, 0, 0.2);
+    border-color: #ff6b00;
+    transform: translateY(-1px);
+  }
+
+  .answer-btn.correct {
+    background: rgba(0, 200, 80, 0.3);
+    border-color: #00c850;
+    animation: pulse-green 0.5s;
+  }
+
+  .answer-btn.wrong {
+    background: rgba(255, 0, 50, 0.3);
+    border-color: #ff0032;
+    animation: shake 0.4s;
+  }
+
+  .answer-btn.disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  /* Results screen */
+  .results-screen { display: none; }
+
+  .results-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 40px;
+  }
+
+  .results-card h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .rank {
+    font-size: 5rem;
+    margin: 20px 0;
+    background: linear-gradient(135deg, #ff6b00, #ff006e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .score-display {
+    font-size: 1.5rem;
+    color: #ccc;
+    margin-bottom: 10px;
+  }
+
+  .score-display span {
+    color: #ff6b00;
+    font-size: 2rem;
+  }
+
+  .message {
+    font-size: 1.1rem;
+    color: #aaa;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .btn-restart {
+    background: linear-gradient(135deg, #3a86ff, #8338ec);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(58, 134, 255, 0.4);
+  }
+
+  .btn-restart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(58, 134, 255, 0.6);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .start-screen h1 { font-size: 2.5rem; }
+    .answers { grid-template-columns: 1fr; }
+    .question-text { font-size: 1.1rem; }
+    .hud { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="container">
+  <!-- Start Screen -->
+  <div class="start-screen" id="startScreen">
+    <h1>Fortnite Quiz</h1>
+    <p class="subtitle">Test your knowledge of the Battle Royale!</p>
+    <button class="btn btn-start" onclick="startQuiz()">Drop In</button>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div class="quiz-screen" id="quizScreen">
+    <div class="hud">
+      <div class="hud-item">Question <span id="qNum">1</span>/15</div>
+      <div class="hud-item">Score: <span id="score">0</span></div>
+      <div class="hud-item">Streak: <span id="streak">0</span></div>
+    </div>
+    <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+    <div class="question-card">
+      <div class="question-text" id="questionText"></div>
+      <div class="answers" id="answers"></div>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div class="results-screen" id="resultsScreen">
+    <div class="results-card">
+      <h2>Match Results</h2>
+      <div class="rank" id="rank">A</div>
+      <div class="score-display"><span id="finalScore">0</span> / 15</div>
+      <p class="message" id="resultMessage"></p>
+      <button class="btn btn-restart" onclick="startQuiz()">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "When was Fortnite Battle Royale released?",
+    answers: ["September 2017", "July 2017", "March 2018", "December 2016"],
+    correct: 0
+  },
+  {
+    q: "What is the name of the in-game currency?",
+    answers: ["V-Bucks", "Fortnite Coins", "Battle Stars", "Storm Tokens"],
+    correct: 0
+  },
+  {
+    q: "What was the original name of Fortnite before Battle Royale?",
+    answers: ["Save the World", "Fortnite Arena", "Battle Island", "Storm Survivors"],
+    correct: 0
+  },
+  {
+    q: "What is the name of the bus that drops players onto the island?",
+    answers: ["Battle Bus", "Drop Ship", "Storm Chaser", "Sky Rider"],
+    correct: 0
+  },
+  {
+    q: "Which of these was a Chapter 1 Season 1 named location?",
+    answers: ["Tilted Towers", "Neo Tilted", "Tainted Towers", "All of the above"],
+    correct: 3
+  },
+  {
+    q: "What is the rarest OG skin in Fortnite?",
+    answers: ["Renegade Raider", "Galaxy Skin", "Skull Trooper", "Aerial Assault Trooper"],
+    correct: 1
+  },
+  {
+    q: "What event ended Chapter 1 Season 10?",
+    answers: ["The End (Black Hole)", "The Device", "The Convergence", "The Unvaulting"],
+    correct: 0
+  },
+  {
+    q: "Who is the founder of Epic Games?",
+    answers: ["Tim Sweeney", "Donald Mustard", "Mark Rein", "Cliff Bleszinski"],
+    correct: 0
+  },
+  {
+    q: "What is the name of the first Battle Pass skin?",
+    answers: ["Skull Trooper", "Renegade Raider", "Aerial Assault Trooper", "Recon Expert"],
+    correct: 0
+  },
+  {
+    q: "What was the first vehicle added to Fortnite?",
+    answers: ["Shopping Cart", "Quadcrasher", "Driftboard", "Baller"],
+    correct: 0
+  },
+  {
+    q: "What is the name of the storm that closes in?",
+    answers: ["The Storm", "The Circle", "The Void", "The Tempest"],
+    correct: 0
+  },
+  {
+    q: "Which weapon was NOT in the original Chapter 1 loot pool?",
+    answers: ["Burst Assault Rifle", "Heavy Sniper", "Infinity Blade", "Pump Shotgun"],
+    correct: 2
+  },
+  {
+    q: "What is the name of the first emote in Fortnite?",
+    answers: ["Floss", "Orange Justice", "Take the L", "Electro Shuffle"],
+    correct: 0
+  },
+  {
+    q: "What material gives the most health when built?",
+    answers: ["Metal", "Wood", "Brick", "All equal"],
+    correct: 0
+  },
+  {
+    q: "What is the max level cap in Chapter 1 Season 1?",
+    answers: ["Level 100", "Level 50", "Level 350", "No cap"],
+    correct: 0
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let streak = 0;
+let timeLeft = 20;
+let timerInterval = null;
+let shuffledQuestions = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  currentQ = 0;
+  score = 0;
+  streak = 0;
+  shuffledQuestions = shuffle(questions);
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = shuffledQuestions[currentQ];
+  document.getElementById('qNum').textContent = currentQ + 1;
+  document.getElementById('score').textContent = score;
+  document.getElementById('streak').textContent = streak;
+  document.getElementById('questionText').textContent = q.q;
+
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+
+  // Shuffle answers
+  const answerIndices = shuffle([0, 1, 2, 3]);
+
+  answerIndices.forEach(idx => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = q.answers[idx];
+    btn.onclick = () => selectAnswer(idx, btn);
+    answersDiv.appendChild(btn);
+  });
+
+  // Start timer
+  timeLeft = 20;
+  updateTimerBar();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerBar();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      selectAnswer(-1, null);
+    }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = (timeLeft / 20) * 100;
+  document.getElementById('timerFill').style.width = pct + '%';
+}
+
+function selectAnswer(idx, btn) {
+  clearInterval(timerInterval);
+  const q = shuffledQuestions[currentQ];
+  const buttons = document.querySelectorAll('.answer-btn');
+
+  buttons.forEach(b => b.classList.add('disabled'));
+
+  if (idx === q.correct) {
+    btn.classList.add('correct');
+    const points = 100 + (streak * 20) + (timeLeft * 5);
+    score += points;
+    streak++;
+  } else {
+    if (btn) btn.classList.add('wrong');
+    buttons[q.correct].classList.add('correct');
+    streak = 0;
+  }
+
+  document.getElementById('score').textContent = score;
+  document.getElementById('streak').textContent = streak;
+
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < shuffledQuestions.length) {
+      showQuestion();
+    } else {
+      showResults();
+    }
+  }, 1500);
+}
+
+function showResults() {
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'block';
+
+  const pct = (score / (shuffledQuestions.length * 100)) * 100;
+  let rank, message;
+
+  if (pct >= 90) {
+    rank = 'S';
+    message = 'Legendary! You are a true Fortnite master. Victory Royale!';
+  } else if (pct >= 70) {
+    rank = 'A';
+    message = 'Amazing! You know your stuff. Almost legendary!';
+  } else if (pct >= 50) {
+    rank = 'B';
+    message = 'Solid game! You know the basics but there is room to grow.';
+  } else if (pct >= 30) {
+    rank = 'C';
+    message = 'Not bad, but you might want to drop in and practice more.';
+  } else {
+    rank = 'D';
+    message = 'Oof. Time to hit the creative mode and study up!';
+  }
+
+  document.getElementById('rank').textContent = rank;
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('resultMessage').textContent = message;
+}
+</script>
+</body>
+</html>
