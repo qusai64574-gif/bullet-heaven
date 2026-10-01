@@ -1,0 +1,220 @@
+/* ==========================================================================
+   auth.css — the sign-in / create-account surface.
+   Same design language as the rest of the app: system fonts, one column,
+   monochrome primary action, no decoration for its own sake.
+   ========================================================================== */
+
+.auth {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--safe-top) + var(--sp-5)) var(--sp-4) calc(var(--safe-bottom) + var(--sp-5));
+  background: var(--bg-canvas);
+}
+
+.auth__card {
+  width: 100%;
+  max-width: 420px;
+  animation: screen-in var(--dur-3) var(--ease-out) both;
+}
+
+/* ------------------------------ Branding ------------------------------- */
+.auth__brand {
+  text-align: center;
+  margin-bottom: var(--sp-7);
+}
+
+.auth__brand--compact {
+  text-align: left;
+  margin-bottom: var(--sp-6);
+}
+
+.auth__mark {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--r-xl);
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  margin: 0 auto var(--sp-4);
+}
+
+.auth__brand--compact .auth__mark {
+  margin: 0 0 var(--sp-4);
+}
+
+.auth__title {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.15;
+}
+
+.auth__sub {
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  margin-top: var(--sp-2);
+  max-width: 42ch;
+}
+
+.auth__brand:not(.auth__brand--compact) .auth__sub {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ------------------------------ Actions -------------------------------- */
+.auth__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+}
+
+.auth .field {
+  margin-bottom: var(--sp-4);
+}
+
+/* ----------------------------- Accounts -------------------------------- */
+.auth__accounts {
+  margin-top: var(--sp-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.auth__label {
+  font-size: var(--fs-subhead);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: var(--sp-1);
+}
+
+.auth__account {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-raised);
+  text-align: left;
+  transition: background-color var(--dur-2) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
+}
+
+.auth__account:active {
+  transform: scale(0.985);
+  background: var(--bg-hover);
+}
+
+/* ------------------------------- Notes --------------------------------- */
+.auth__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-top: var(--sp-6);
+  font-size: var(--fs-footnote);
+  color: var(--text-tertiary);
+  line-height: var(--lh-normal);
+  text-align: left;
+}
+
+.auth__note svg {
+  margin-top: 2px;
+  flex: none;
+}
+
+.auth__brand:not(.auth__brand--compact) + .auth__actions + .auth__note {
+  justify-content: center;
+  text-align: center;
+}
+
+.auth__foot {
+  margin-top: var(--sp-5);
+  display: flex;
+  justify-content: center;
+}
+
+.auth__link {
+  font-size: var(--fs-callout);
+  color: var(--text-secondary);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-xs);
+  min-height: var(--touch-min);
+}
+
+.auth__link:active {
+  background: var(--bg-hover);
+}
+
+/* --------------------------- Password meter ---------------------------- */
+.auth__meter {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  max-width: 160px;
+}
+
+.auth__meter i {
+  height: 4px;
+  flex: 1;
+  border-radius: var(--r-full);
+  background: var(--bg-sunken);
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+
+.auth__meter i.is-weak {
+  background: var(--danger);
+}
+.auth__meter i.is-fair {
+  background: var(--warning);
+}
+.auth__meter i.is-good {
+  background: var(--info);
+}
+.auth__meter i.is-strong {
+  background: var(--success);
+}
+
+.auth__meter-label {
+  font-size: var(--fs-footnote);
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+.auth__reveal {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-subhead);
+  color: var(--text-secondary);
+  min-height: 30px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-xs);
+}
+
+.auth__reveal:active {
+  background: var(--bg-hover);
+}
+
+/* On a short screen the card should still breathe, not cram. */
+@media (max-height: 700px) {
+  .auth__brand {
+    margin-bottom: var(--sp-5);
+  }
+  .auth__mark {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--r-lg);
+  }
+  .auth__title {
+    font-size: var(--fs-title);
+  }
+}

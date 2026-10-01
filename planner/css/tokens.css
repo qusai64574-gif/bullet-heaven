@@ -1,0 +1,211 @@
+/* ==========================================================================
+   Study Planner — Design Tokens
+   Design language: ChatGPT mobile (radical subtraction, system fonts,
+   monochrome primary controls, system-defined surfaces, restrained accent).
+   Both themes are hand-tuned, not inverted.
+   ========================================================================== */
+
+:root {
+  /* ---- Type scale (system fonts only, per ChatGPT design language) ---- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --fs-display: 30px;
+  --fs-title: 22px;
+  --fs-headline: 17px;
+  --fs-body: 15px;
+  --fs-callout: 14px;
+  --fs-subhead: 13px;
+  --fs-footnote: 12px;
+  --fs-caption: 11px;
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.45;
+  --lh-relaxed: 1.6;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: -0.01em;
+  --tracking-wide: 0.04em;
+
+  /* ---- Spacing (4px grid) ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 56px;
+
+  /* ---- Radius ---- */
+  --r-xs: 8px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-sheet: 22px;
+  --r-full: 999px;
+
+  /* ---- Layout ---- */
+  --nav-h: 56px;
+  --header-h: 52px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --content-max: 680px;
+  --touch-min: 44px;
+
+  /* ---- Motion (subtle, professional; never slow) ---- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --dur-1: 110ms;
+  --dur-2: 170ms;
+  --dur-3: 240ms;
+  --dur-4: 320ms;
+
+  /* ---- Item type hues (shared by both themes; desaturated & professional,
+          never the sole signal — every type also carries an icon + label) ---- */
+  --type-homework: #4f6bed;
+  --type-project: #8b5cf6;
+  --type-exam: #d9544d;
+  --type-event: #0f9d76;
+  --type-task: #b7791f;
+  --type-note: #6b7280;
+}
+
+/* ============================ LIGHT THEME ============================== */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces — layered like a real system: canvas / raised / sunken */
+  --bg-canvas: #ffffff;
+  --bg-surface: #f7f7f8;
+  --bg-raised: #ffffff;
+  --bg-sunken: #f0f0f1;
+  --bg-hover: rgba(13, 13, 13, 0.04);
+  --bg-active: rgba(13, 13, 13, 0.07);
+  --bg-overlay: rgba(13, 13, 13, 0.34);
+  --bg-header: rgba(255, 255, 255, 0.82);
+  --bg-nav: rgba(255, 255, 255, 0.9);
+  --bg-skeleton: #ececed;
+
+  /* Ink */
+  --text-primary: #0d0d0d;
+  --text-secondary: #5d5d5d;
+  --text-tertiary: #8f8f8f;
+  --text-disabled: #b9b9b9;
+  --text-inverse: #ffffff;
+
+  /* Lines */
+  --border-subtle: rgba(13, 13, 13, 0.07);
+  --border: rgba(13, 13, 13, 0.12);
+  --border-strong: rgba(13, 13, 13, 0.22);
+
+  /* Primary control = near-black (ChatGPT), not a loud brand color */
+  --accent: #0d0d0d;
+  --accent-hover: #2b2b2b;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(13, 13, 13, 0.06);
+
+  /* Semantic */
+  --success: #0f9d76;
+  --success-soft: rgba(15, 157, 118, 0.1);
+  --warning: #b7791f;
+  --warning-soft: rgba(183, 121, 31, 0.12);
+  --danger: #d9544d;
+  --danger-soft: rgba(217, 84, 77, 0.1);
+  --info: #4f6bed;
+  --info-soft: rgba(79, 107, 237, 0.1);
+  --focus-ring: #0d0d0d;
+
+  --shadow-1: 0 1px 2px rgba(13, 13, 13, 0.05), 0 1px 1px rgba(13, 13, 13, 0.03);
+  --shadow-2: 0 2px 8px rgba(13, 13, 13, 0.07), 0 1px 2px rgba(13, 13, 13, 0.04);
+  --shadow-3: 0 8px 28px rgba(13, 13, 13, 0.12), 0 2px 6px rgba(13, 13, 13, 0.06);
+  --shadow-4: 0 18px 48px rgba(13, 13, 13, 0.2);
+  --ring-accent: rgba(13, 13, 13, 0.08);
+
+  --skeleton-shine: rgba(255, 255, 255, 0.65);
+}
+
+/* ============================= DARK THEME ============================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-canvas: #212121;
+  --bg-surface: #171717;
+  --bg-raised: #2a2a2a;
+  --bg-sunken: #131313;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.1);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --bg-header: rgba(33, 33, 33, 0.86);
+  --bg-nav: rgba(23, 23, 23, 0.92);
+  --bg-skeleton: #2f2f2f;
+
+  --text-primary: #ececec;
+  --text-secondary: #b4b4b4;
+  --text-tertiary: #8e8e8e;
+  --text-disabled: #6b6b6b;
+  --text-inverse: #0d0d0d;
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.26);
+
+  --accent: #ffffff;
+  --accent-hover: #d9d9d9;
+  --accent-ink: #0d0d0d;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+
+  --success: #3ecf9a;
+  --success-soft: rgba(62, 207, 154, 0.14);
+  --warning: #e2b34a;
+  --warning-soft: rgba(226, 179, 74, 0.14);
+  --danger: #f0776e;
+  --danger-soft: rgba(240, 119, 110, 0.14);
+  --info: #8ba0ff;
+  --info-soft: rgba(139, 160, 255, 0.14);
+  --focus-ring: #ffffff;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --shadow-4: 0 20px 52px rgba(0, 0, 0, 0.65);
+  --ring-accent: rgba(255, 255, 255, 0.1);
+
+  --skeleton-shine: rgba(255, 255, 255, 0.06);
+
+  /* Type hues re-tuned for dark (higher lightness, same identity) */
+  --type-homework: #8ba0ff;
+  --type-project: #b79bff;
+  --type-exam: #f0776e;
+  --type-event: #3ecf9a;
+  --type-task: #e2b34a;
+  --type-note: #9ca3af;
+}
+
+/* Density for very small phones (<=360px wide) */
+@media (max-width: 360px) {
+  :root {
+    --fs-display: 26px;
+    --fs-title: 20px;
+    --sp-4: 14px;
+    --sp-5: 18px;
+  }
+}
+
+/* Roomier type on large phones / tablets */
+@media (min-width: 600px) {
+  :root {
+    --fs-display: 34px;
+    --fs-body: 16px;
+  }
+}
