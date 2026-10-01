@@ -112,6 +112,38 @@
       if (Store.getSetting('onboarded', false)) global.Router.handle(true);
     });
 
+    // Push every edit up to the server shortly after it happens, so a student
+    // who switches devices finds the work already there.
+    global.Store.on('change', (e) => {
+      if (!global.Auth.isSignedIn()) return;
+      if (e && e.collection === 'conversations') return; // chat history stays local
+      global.Auth.scheduleSync('change');
+    });
+    global.Store.on('settings', () => {
+      if (global.Auth.isSignedIn()) global.Auth.scheduleSync('settings');
+    });
+    global.Store.on('profile', () => {
+      if (global.Auth.isSignedIn()) global.Auth.scheduleSync('profile');
+    });
+
+    // Flush a pending sync when the app goes to the background, and catch up
+    // when the connection returns.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        Store.flush();
+        if (global.Auth.isSignedIn() && global.Auth.syncStatus().pending) global.Auth.sync({ reason: 'background' });
+      }
+    });
+    global.addEventListener('online', () => {
+      if (global.Auth.isSignedIn()) {
+        global.Auth.sync({ reason: 'reconnect' });
+        UI.toast('Back online — syncing your planner.');
+      }
+    });
+    global.addEventListener('offline', () => {
+      if (global.Auth.isSignedIn()) UI.toast('Offline — your work is saved here and will sync later.', { duration: 5000 });
+    });
+
     // Assistant state that depends on time (greeting) refreshes on return.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {

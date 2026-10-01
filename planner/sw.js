@@ -1,7 +1,7 @@
 /* Service worker — offline app shell.
    The app never needs the network: everything is local. This caches the shell
    so it opens instantly and works with no connection at all. */
-const CACHE = 'studyplanner-v1.2.0';
+const CACHE = 'studyplanner-v1.3.0';
 
 const ASSETS = [
   './',
@@ -15,6 +15,7 @@ const ASSETS = [
   'js/core/idb.js',
   'js/core/models.js',
   'js/core/store.js',
+  'js/core/cloud.js',
   'js/core/notify.js',
   'js/core/auth.js',
   'js/ui/ui.js',

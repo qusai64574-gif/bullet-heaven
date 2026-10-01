@@ -120,7 +120,7 @@
       }
 
       card.appendChild(
-        U.el('p', { class: 'auth__note', text: 'Accounts and planner data are stored in this browser only. Nothing is uploaded, and nothing is shared between devices.' })
+        U.el('p', { class: 'auth__note', text: 'Your account and planner are uploaded so you can sign in on any device. Your planner is encrypted on this device first — the server only stores scrambled data it cannot read.' })
       );
     }
 
@@ -350,7 +350,7 @@
       card.appendChild(
         U.el('div', { class: 'auth__note' }, [
           U.icon('lock', 13),
-          U.el('span', { text: 'Your password is scrambled (PBKDF2-SHA256) before it is saved. Nobody — including this app — can read it back.' }),
+          U.el('span', { text: 'Your planner is encrypted on this device (AES-GCM) before it is uploaded, so the server only holds scrambled data. Sign in with the same name and password on any device to get your work.' }),
         ])
       );
 

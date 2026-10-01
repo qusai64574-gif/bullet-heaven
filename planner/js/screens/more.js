@@ -782,15 +782,27 @@
       const accountCard = U.el('div', { class: 'card card--pad', style: { marginBottom: '12px' } });
       if (me) {
         const info = global.Auth.statsFor(me.id);
+        const sync = global.Auth.syncStatus();
+        const syncLabel =
+          sync.status === 'working' ? 'Syncing…'
+          : sync.status === 'ok' ? 'Synced ' + (sync.lastSyncAt ? U.fmtDateStamp(sync.lastSyncAt) : '')
+          : sync.status === 'offline' ? 'Offline — will sync later'
+          : sync.status === 'error' ? 'Sync problem'
+          : 'Not synced yet';
         accountCard.appendChild(
           U.el('div', { class: 'row', style: { gap: '12px' } }, [
             U.el('span', { class: 'avatar', style: { background: me.avatarColor }, text: global.UI.initials(me.name) }),
             U.el('div', { class: 'grow col', style: { minWidth: 0 } }, [
               U.el('div', { style: { fontWeight: '600' }, text: me.name }),
-              U.el('div', { class: 'text-tertiary', style: { fontSize: 'var(--fs-caption)' }, text: 'Signed in · ' + info.items + ' items · ' + info.size }),
+              U.el('div', { class: 'text-tertiary', style: { fontSize: 'var(--fs-caption)' }, text: 'Signed in · ' + info.items + ' items · ' + syncLabel }),
             ]),
           ])
         );
+        if (sync.status === 'error' && sync.error) {
+          accountCard.appendChild(
+            U.el('div', { class: 'field__error', style: { marginTop: '10px' } }, [U.icon('alert', 14), U.el('span', { text: sync.error })])
+          );
+        }
       } else {
         accountCard.appendChild(
           U.el('div', { class: 'row', style: { gap: '12px' } }, [
@@ -806,6 +818,70 @@
 
       const accountList = U.el('div', { class: 'list', style: { marginBottom: '18px' } });
       if (me) {
+        accountList.appendChild(
+          UI.fieldRow('Sync now', (function () {
+            const s = global.Auth.syncStatus();
+            if (s.status === 'working') return 'Syncing…';
+            if (s.status === 'error') return 'Failed — tap to retry';
+            if (s.lastSyncAt) return 'Last synced ' + U.fmtDateStamp(s.lastSyncAt);
+            return 'Not synced yet';
+          })(), {
+            icon: 'refresh',
+            onClick: async () => {
+              UI.toast('Syncing…');
+              const res = await global.Auth.sync({ reason: 'manual' });
+              if (res.ok) UI.toast('Your planner is up to date on the server.');
+              else UI.toast(res.error || 'Sync failed.');
+              paint();
+            },
+          })
+        );
+        accountList.appendChild(
+          UI.fieldRow('Send this device’s copy up', 'Replaces the server copy', {
+            icon: 'upload',
+            chevron: false,
+            onClick: async () => {
+              const ok = await UI.confirm({
+                title: 'Upload this device’s planner?',
+                message: 'The copy on the server will be replaced by what is on this device. Use this if this device has the newer work.',
+                confirmLabel: 'Upload',
+              });
+              if (!ok) return;
+              const res = await global.Auth.uploadLocal();
+              UI.toast(res.ok ? 'Uploaded.' : res.error || 'Upload failed.');
+              paint();
+            },
+          })
+        );
+        accountList.appendChild(
+          UI.fieldRow('Pull the server’s copy down', 'Replaces what is here', {
+            icon: 'download',
+            chevron: false,
+            onClick: async () => {
+              const ok = await UI.confirm({
+                title: 'Download the server’s planner?',
+                message: 'Everything on this device will be replaced by the copy on the server. Use this if another device has the newer work.',
+                confirmLabel: 'Download',
+                danger: true,
+              });
+              if (!ok) return;
+              const res = await global.Auth.downloadRemote();
+              UI.toast(res.ok ? 'Downloaded. Your planner is up to date.' : res.error || 'Download failed.');
+              global.Router.handle(true);
+            },
+          })
+        );
+        accountList.appendChild(
+          UI.fieldRow('Test the connection', 'Checks the sync server', {
+            icon: 'zap',
+            chevron: false,
+            onClick: async () => {
+              UI.toast('Testing…');
+              const res = await global.Cloud.selfTest();
+              UI.toast(res.ok ? 'Sync server is reachable and working.' : 'Test failed: ' + (res.error || res.step));
+            },
+          })
+        );
         accountList.appendChild(
           UI.fieldRow('Change my name', me.name, {
             icon: 'user',
