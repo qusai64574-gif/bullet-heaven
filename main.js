@@ -19,17 +19,11 @@ async function initGame() {
   // Setup menu buttons
   setupMenuButtons();
 
-  // Show main menu
+  // Show main menu immediately
   UI.showScreen('mainMenu');
 
-  // Load assets
-  try {
-    await Assets.load((progress) => {
-      // Could show loading bar here
-    });
-  } catch (e) {
-    console.error('Failed to load assets:', e);
-  }
+  // Load assets in background (non-blocking)
+  Assets.load().catch((e) => console.error('Failed to load assets:', e));
 }
 
 function loadSettings() {
