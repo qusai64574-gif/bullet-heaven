@@ -2,7 +2,7 @@
 // All glow effects use additive blending (globalCompositeOperation = 'lighter')
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Particle - Base particle with glow, trails, and additive blending
+// Particle - Base particle with multi-layer glow, trails, and additive blending
 // ─────────────────────────────────────────────────────────────────────────────
 class Particle {
   constructor(x, y, vx, vy, color, lifetime, size) {
@@ -18,14 +18,14 @@ class Particle {
 
     // Trail history
     this.trail = [];
-    this.maxTrail = 6;
+    this.maxTrail = 8;
 
     // Physics
     this.drag = 0.96;
     this.gravity = 0;
 
     // Visual
-    this.glowSize = size * 2.5;
+    this.glowSize = size * 3;
     this.colorRGB = this.hexToRGB(color);
   }
 
@@ -66,7 +66,7 @@ class Particle {
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < this.trail.length; i++) {
       const t = this.trail[i];
-      const trailAlpha = (i / this.trail.length) * alpha * 0.4;
+      const trailAlpha = (i / this.trail.length) * alpha * 0.5;
       const trailSize = this.size * (i / this.trail.length) * 0.8;
 
       ctx.globalAlpha = trailAlpha;
@@ -76,11 +76,17 @@ class Particle {
       ctx.fill();
     }
 
-    // Draw glow layer
-    ctx.globalAlpha = alpha * 0.3;
+    // Draw outer glow
+    ctx.globalAlpha = alpha * 0.2;
     ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},1)`;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.glowSize * alpha, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw mid glow
+    ctx.globalAlpha = alpha * 0.4;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.glowSize * 0.6 * alpha, 0, Math.PI * 2);
     ctx.fill();
 
     // Draw core
@@ -91,7 +97,7 @@ class Particle {
     ctx.fill();
 
     // Draw bright center
-    ctx.globalAlpha = alpha * 0.8;
+    ctx.globalAlpha = alpha * 0.9;
     ctx.fillStyle = `rgba(255,255,255,1)`;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size * alpha * 0.4, 0, Math.PI * 2);
