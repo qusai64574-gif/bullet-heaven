@@ -5,7 +5,7 @@ class Player {
     this.x = x;
     this.y = y;
     this.size = 24;
-    this.speed = 200;
+    this.speed = 220;
     this.maxHp = 100;
     this.hp = this.maxHp;
     this.level = 1;
@@ -17,7 +17,7 @@ class Player {
     this.fireRateMultiplier = 1;
     this.speedMultiplier = 1;
     this.xpMultiplier = 1;
-    this.magnetRange = 80;
+    this.magnetRange = 100;
     this.critChance = 0.05;
     this.critMultiplier = 2;
     this.armorMultiplier = 1;
@@ -26,6 +26,9 @@ class Player {
     this.multishot = 0;
     this.explosionMultiplier = 1;
     this.pierceBonus = 0;
+    this.luckBonus = 0;
+    this.berserkBonus = 0;
+    this.slowAura = 0;
 
     // Weapons
     this.weapons = [];
@@ -35,12 +38,17 @@ class Player {
     this.animTime = 0;
     this.facingRight = true;
     this.moving = false;
+    this.moveAngle = 0;
 
     // Invulnerability frames
     this.invulnerable = 0;
 
     // Regen timer
     this.regenTimer = 0;
+
+    // Stats
+    this.totalDamageDealt = 0;
+    this.totalKills = 0;
   }
 
   addWeapon(weaponId) {
@@ -72,6 +80,7 @@ class Player {
       this.y += ny * this.speed * this.speedMultiplier * dt;
 
       if (nx !== 0) this.facingRight = nx > 0;
+      this.moveAngle = Math.atan2(ny, nx);
     }
 
     // Clamp to world
@@ -90,6 +99,13 @@ class Player {
         this.regenTimer -= 1;
         this.hp = Math.min(this.hp + this.regenRate, this.maxHp);
       }
+    }
+
+    // Berserk damage bonus
+    if (this.berserkBonus > 0) {
+      const hpPercent = this.hp / this.maxHp;
+      const berserkMult = 1 + (1 - hpPercent) * this.berserkBonus * 10;
+      this.damageMultiplier *= berserkMult;
     }
 
     // Update weapons
@@ -115,7 +131,7 @@ class Player {
   }
 
   fireWeapon(weapon) {
-    const target = Engine.findNearestEnemy(this.x, this.y, 600);
+    const target = Engine.findNearestEnemy(this.x, this.y, 700);
     if (!target) return;
 
     const baseAngle = Math.atan2(target.y - this.y, target.x - this.x);
@@ -172,6 +188,7 @@ class Player {
     damage = Math.floor(damage);
     enemy.takeDamage(damage);
     Engine.damageDealt += damage;
+    this.totalDamageDealt += damage;
 
     // Damage number
     Engine.addDamageNumber(
@@ -183,6 +200,11 @@ class Player {
 
     // Hit spark
     Engine.addHitSpark(enemy.x, enemy.y, weapon.color);
+
+    // Slow effect
+    if (weapon.slowEffect) {
+      enemy.applySlow(weapon.slowEffect, weapon.slowDuration);
+    }
 
     // Area damage
     if (weapon.areaDamage > 0) {
@@ -206,8 +228,18 @@ class Player {
     this.hp -= actualDamage;
     this.invulnerable = 0.5;
 
-    Engine.addScreenShake(0.3);
-    Engine.addFloatingText(this.x, this.y - 30, `-${actualDamage}`, '#ff4444', 1);
+    Engine.addScreenShake(0.4);
+    Engine.addFloatingText(this.x, this.y - 30, `-${actualDamage}`, '#ff4444', 1.2);
+
+    // Damage flash
+    for (let i = 0; i < 8; i++) {
+      Engine.particles.push(new Particle(
+        this.x, this.y,
+        (Math.random() - 0.5) * 200,
+        (Math.random() - 0.5) * 200,
+        '#ff0000', 0.3, 3
+      ));
+    }
   }
 
   gainXP(amount) {
@@ -228,16 +260,9 @@ class Player {
     UI.showLevelUp();
 
     // Level up effect
-    Engine.addFloatingText(this.x, this.y - 40, 'LEVEL UP!', '#ffd700', 2);
-    for (let i = 0; i < 20; i++) {
-      const angle = (i / 20) * Math.PI * 2;
-      Engine.particles.push(new Particle(
-        this.x, this.y,
-        Math.cos(angle) * 150,
-        Math.sin(angle) * 150,
-        '#ffd700', 0.8, 4
-      ));
-    }
+    Engine.addFloatingText(this.x, this.y - 40, 'LEVEL UP!', '#ffd700', 2.5);
+    Engine.particles.push(new LevelUpEffect(this.x, this.y));
+    Engine.addScreenShake(0.5);
   }
 
   applyUpgrade(upgradeId) {
@@ -257,10 +282,8 @@ class Player {
       for (const [evoKey, evoData] of Object.entries(EVOLUTIONS)) {
         const [weaponId, upgradeId] = evoKey.split('+');
         if (weapon.id === weaponId) {
-          // Check if player has the required upgrade at level > 0
           const hasUpgrade = (this.upgradeLevels && this.upgradeLevels[upgradeId] > 0);
           if (hasUpgrade) {
-            // Evolve weapon
             const evoIndex = this.weapons.indexOf(weapon);
             this.weapons[evoIndex] = {
               ...evoData,
@@ -268,18 +291,18 @@ class Player {
               cooldown: 0,
               orbitAngle: 0,
             };
-            Engine.addFloatingText(this.x, this.y - 60, `${evoData.name}!`, '#ff00ff', 2);
-            Engine.addScreenShake(1);
-            Engine.addCameraPunch(0.5);
+            Engine.addFloatingText(this.x, this.y - 60, `${evoData.name}!`, '#ff00ff', 2.5);
+            Engine.addScreenShake(1.5);
+            Engine.addCameraPunch(1);
 
             // Evolution particles
-            for (let i = 0; i < 20; i++) {
-              const angle = (i / 20) * Math.PI * 2;
+            for (let i = 0; i < 30; i++) {
+              const angle = (i / 30) * Math.PI * 2;
               Engine.particles.push(new Particle(
                 this.x, this.y,
-                Math.cos(angle) * 150,
-                Math.sin(angle) * 150,
-                '#ff00ff', 0.8, 5
+                Math.cos(angle) * 200,
+                Math.sin(angle) * 200,
+                '#ff00ff', 1, 6
               ));
             }
           }
@@ -298,8 +321,13 @@ class Player {
       ctx.globalAlpha = 0.5;
     }
 
+    // Player glow
+    ctx.shadowColor = '#4488ff';
+    ctx.shadowBlur = 15;
+
     Assets.drawAnim(ctx, sprite, this.x, this.y, this.animTime, flip, 0.75);
 
+    ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
 
     // Draw orbiting blades
@@ -312,6 +340,8 @@ class Player {
           const by = this.y + Math.sin(angle) * weapon.orbitRadius;
 
           ctx.fillStyle = weapon.color;
+          ctx.shadowColor = weapon.color;
+          ctx.shadowBlur = 10;
           ctx.beginPath();
           ctx.arc(bx, by, weapon.size / 2, 0, Math.PI * 2);
           ctx.fill();
@@ -323,6 +353,7 @@ class Player {
           ctx.arc(this.x, this.y, weapon.orbitRadius, angle - 0.3, angle);
           ctx.stroke();
         }
+        ctx.shadowBlur = 0;
       }
     }
   }

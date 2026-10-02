@@ -13,7 +13,6 @@ const Multiplayer = {
   ping: 0,
 
   init() {
-    // Load saved server URL
     const saved = localStorage.getItem('bulletHeaven_serverUrl');
     if (saved) {
       this.serverUrl = saved;
@@ -133,7 +132,6 @@ const Multiplayer = {
     }
   },
 
-  // Host a game
   hostGame(name, maxPlayers, seed, isPublic) {
     this.send({
       type: 'host',
@@ -145,7 +143,6 @@ const Multiplayer = {
     });
   },
 
-  // Join with code
   joinGame(code) {
     this.send({
       type: 'join',
@@ -154,36 +151,30 @@ const Multiplayer = {
     });
   },
 
-  // Get server list
   getServerList() {
     this.send({ type: 'getServers' });
   },
 
-  // Ready up
   setReady(ready) {
     this.send({ type: 'ready', ready });
   },
 
-  // Start game (host only)
   startGame() {
     this.send({ type: 'startGame' });
   },
 
-  // Leave room
   leaveRoom() {
     this.send({ type: 'leaveRoom' });
     this.currentRoom = null;
     this.players = [];
   },
 
-  // Start multiplayer game
   startMultiplayerGame(seed) {
     UI.showScreen(null);
     UI.showHUD();
     Engine.startGame(true, this.isHost, seed);
   },
 
-  // Send player state
   sendPlayerState() {
     if (!this.connected || !Engine.player) return;
 
@@ -196,12 +187,10 @@ const Multiplayer = {
     });
   },
 
-  // Get player name
   getPlayerName() {
     return localStorage.getItem('bulletHeaven_username') || 'Player';
   },
 
-  // Save server URL
   saveServerUrl(url) {
     this.serverUrl = url;
     localStorage.setItem('bulletHeaven_serverUrl', url);

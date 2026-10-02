@@ -12,7 +12,7 @@ const Engine = {
   paused: false,
 
   // Camera
-  camera: { x: 0, y: 0, shake: 0, shakeX: 0, shakeY: 0, punch: 0 },
+  camera: { x: 0, y: 0, shake: 0, shakeX: 0, shakeY: 0, punch: 0, zoom: 1 },
 
   // Game state
   state: 'menu', // menu, playing, levelup, gameover
@@ -20,6 +20,9 @@ const Engine = {
   kills: 0,
   damageDealt: 0,
   bossKills: 0,
+  combo: 0,
+  comboTimer: 0,
+  maxCombo: 0,
 
   // Entities
   player: null,
@@ -38,6 +41,7 @@ const Engine = {
   bossTimer: 0,
   bossActive: null,
   bossSpawnInterval: 120,
+  bossIndex: 0,
 
   // World
   worldSeed: 0,
@@ -48,6 +52,11 @@ const Engine = {
   isMultiplayer: false,
   isHost: false,
   serverState: null,
+
+  // Performance
+  fps: 0,
+  frameCount: 0,
+  fpsTimer: 0,
 
   init() {
     this.canvas = document.getElementById('game-canvas');
@@ -73,7 +82,11 @@ const Engine = {
     this.bossKills = 0;
     this.bossTimer = 0;
     this.bossActive = null;
+    this.bossIndex = 0;
     this.spawnTimer = 0;
+    this.combo = 0;
+    this.comboTimer = 0;
+    this.maxCombo = 0;
     this.state = 'playing';
     this.paused = false;
     this.running = true;
@@ -108,6 +121,15 @@ const Engine = {
     this.deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.05);
     this.lastTime = currentTime;
 
+    // FPS counter
+    this.frameCount++;
+    this.fpsTimer += this.deltaTime;
+    if (this.fpsTimer >= 1) {
+      this.fps = this.frameCount;
+      this.frameCount = 0;
+      this.fpsTimer = 0;
+    }
+
     if (!this.paused && this.state === 'playing') {
       this.update(this.deltaTime);
     }
@@ -119,6 +141,14 @@ const Engine = {
   update(dt) {
     this.gameTime += dt;
     this.matchTime += dt;
+
+    // Combo timer
+    if (this.comboTimer > 0) {
+      this.comboTimer -= dt;
+      if (this.comboTimer <= 0) {
+        this.combo = 0;
+      }
+    }
 
     // Update player
     this.player.update(dt);
@@ -253,11 +283,11 @@ const Engine = {
   },
 
   spawnEnemies() {
-    const count = Math.floor(2 + this.matchTime * 0.1);
+    const count = Math.floor(2 + this.matchTime * 0.15);
     const types = Object.keys(ENEMY_TYPES);
 
     for (let i = 0; i < count; i++) {
-      const typeIndex = Math.floor(Math.random() * Math.min(types.length, 2 + Math.floor(this.matchTime / 30)));
+      const typeIndex = Math.floor(Math.random() * Math.min(types.length, 3 + Math.floor(this.matchTime / 20)));
       const type = types[Math.min(typeIndex, types.length - 1)];
       const enemyType = ENEMY_TYPES[type];
 
@@ -277,7 +307,10 @@ const Engine = {
   },
 
   spawnBoss() {
-    const bossType = BOSS_TYPES.boss1;
+    const bossKeys = Object.keys(BOSS_TYPES);
+    const bossType = BOSS_TYPES[bossKeys[this.bossIndex % bossKeys.length]];
+    this.bossIndex++;
+
     const angle = Math.random() * Math.PI * 2;
     const dist = Math.max(this.width, this.height) / 2 + 200;
     let x = this.player.x + Math.cos(angle) * dist;
@@ -290,14 +323,25 @@ const Engine = {
     this.enemies.push(this.bossActive);
 
     // Boss spawn effect
-    this.addScreenShake(1);
-    this.addFloatingText(x, y - 50, 'BOSS SPAWNED!', '#ff0000', 2);
+    this.addScreenShake(1.5);
+    this.addFloatingText(x, y - 50, '⚠ BOSS SPAWNED! ⚠', '#ff0000', 2.5);
     UI.showBossBar(bossType.name);
   },
 
   onEnemyDeath(enemy) {
     this.kills++;
     this.damageDealt += enemy.maxHp;
+
+    // Combo
+    this.combo++;
+    this.comboTimer = 3;
+    if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+    // Combo text
+    if (this.combo > 0 && this.combo % 10 === 0) {
+      this.addFloatingText(enemy.x, enemy.y - 40, `${this.combo}x COMBO!`, '#ff00ff', 2);
+      this.addScreenShake(0.3);
+    }
 
     // Drop XP gems
     const gemCount = Math.ceil(enemy.xp / 5);
@@ -311,40 +355,55 @@ const Engine = {
     }
 
     // Death particles
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 12; i++) {
       this.particles.push(new Particle(
         enemy.x, enemy.y,
-        (Math.random() - 0.5) * 200,
-        (Math.random() - 0.5) * 200,
-        enemy.color, 0.5, 4
+        (Math.random() - 0.5) * 250,
+        (Math.random() - 0.5) * 250,
+        enemy.color, 0.6, 4
       ));
     }
 
     // Hit effect
     this.particles.push(new HitEffect(enemy.x, enemy.y));
+
+    // Explosion for bombers
+    if (enemy.type.explodes) {
+      this.addExplosion(enemy.x, enemy.y, enemy.type.explosionRadius, '#ffaa00');
+      // Damage nearby enemies
+      const nearby = this.getEnemiesInRange(enemy.x, enemy.y, enemy.type.explosionRadius);
+      for (const e of nearby) {
+        if (e !== enemy && e.hp > 0) {
+          e.takeDamage(enemy.damage * 2);
+        }
+      }
+    }
   },
 
   onBossDeath(boss) {
     this.bossKills++;
-    this.addScreenShake(2);
-    this.addFloatingText(boss.x, boss.y - 50, 'BOSS DEFEATED!', '#ffd700', 2.5);
+    this.addScreenShake(3);
+    this.addFloatingText(boss.x, boss.y - 50, 'BOSS DEFEATED!', '#ffd700', 3);
 
     // Big explosion
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
       this.particles.push(new Particle(
-        boss.x + (Math.random() - 0.5) * 60,
-        boss.y + (Math.random() - 0.5) * 60,
-        (Math.random() - 0.5) * 400,
-        (Math.random() - 0.5) * 400,
-        '#ff4400', 1, 8
+        boss.x + (Math.random() - 0.5) * 80,
+        boss.y + (Math.random() - 0.5) * 80,
+        (Math.random() - 0.5) * 500,
+        (Math.random() - 0.5) * 500,
+        '#ff4400', 1.2, 10
       ));
     }
 
+    // Shockwave
+    this.particles.push(new ShockwaveEffect(boss.x, boss.y, 200));
+
     // Drop lots of XP
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 25; i++) {
       const gem = new XPGem(
-        boss.x + (Math.random() - 0.5) * 100,
-        boss.y + (Math.random() - 0.5) * 100,
+        boss.x + (Math.random() - 0.5) * 120,
+        boss.y + (Math.random() - 0.5) * 120,
         10
       );
       this.xpGems.push(gem);
@@ -363,8 +422,11 @@ const Engine = {
     const ctx = this.ctx;
     ctx.save();
 
-    // Clear
-    ctx.fillStyle = '#0a0a0f';
+    // Clear with gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, this.height);
+    gradient.addColorStop(0, '#0a0a1a');
+    gradient.addColorStop(1, '#1a0a2e');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, this.width, this.height);
 
     if (this.state === 'menu') {
@@ -409,10 +471,12 @@ const Engine = {
       proj.draw(ctx);
     }
 
-    // Draw particles
+    // Draw particles with additive blending
+    ctx.globalCompositeOperation = 'lighter';
     for (const p of this.particles) {
       p.draw(ctx);
     }
+    ctx.globalCompositeOperation = 'source-over';
 
     // Draw damage numbers
     for (const dn of this.damageNumbers) {
@@ -428,7 +492,7 @@ const Engine = {
   },
 
   drawWorld(ctx) {
-    // Draw floor tiles
+    // Draw floor tiles with subtle pattern
     const startX = Math.floor(this.camera.x / WORLD.tileSize) * WORLD.tileSize;
     const startY = Math.floor(this.camera.y / WORLD.tileSize) * WORLD.tileSize;
     const endX = startX + this.width + WORLD.tileSize * 2;
@@ -444,10 +508,13 @@ const Engine = {
       }
     }
 
-    // Draw world border
-    ctx.strokeStyle = '#ff0000';
+    // Draw world border with glow
+    ctx.strokeStyle = '#ff006e';
     ctx.lineWidth = 4;
+    ctx.shadowColor = '#ff006e';
+    ctx.shadowBlur = 20;
     ctx.strokeRect(0, 0, this.worldWidth, this.worldHeight);
+    ctx.shadowBlur = 0;
   },
 
   drawDecorations(ctx) {
@@ -492,9 +559,9 @@ const Engine = {
   },
 
   addExplosion(x, y, radius, color) {
-    for (let i = 0; i < 15; i++) {
-      const angle = (i / 15) * Math.PI * 2;
-      const speed = 100 + Math.random() * 200;
+    for (let i = 0; i < 20; i++) {
+      const angle = (i / 20) * Math.PI * 2;
+      const speed = 100 + Math.random() * 250;
       this.particles.push(new Particle(
         x, y,
         Math.cos(angle) * speed,
@@ -509,13 +576,13 @@ const Engine = {
   },
 
   addHitSpark(x, y, color) {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       this.particles.push(new Particle(
         x, y,
-        (Math.random() - 0.5) * 150,
-        (Math.random() - 0.5) * 150,
+        (Math.random() - 0.5) * 200,
+        (Math.random() - 0.5) * 200,
         color || '#ffffff',
-        0.2,
+        0.25,
         2
       ));
     }

@@ -12,18 +12,12 @@ const World = {
     this.obstacles = [];
     this.decorations = [];
 
-    // Generate terrain
     this.generateTerrain();
-
-    // Generate obstacles
     this.obstacles = this.generateObstacles();
-
-    // Generate decorations
     this.decorations = this.generateDecorations();
   },
 
   generateTerrain() {
-    // Simple noise-based terrain
     const tileCount = Math.ceil(WORLD.width / WORLD.tileSize);
     for (let x = 0; x < tileCount; x++) {
       this.tiles[x] = [];
@@ -41,7 +35,6 @@ const World = {
   },
 
   simpleNoise(x, y) {
-    // Simple pseudo-random noise
     const n = Math.sin(x * 12.9898 + y * 78.233 + this.seed) * 43758.5453;
     return n - Math.floor(n);
   },
@@ -54,7 +47,6 @@ const World = {
       const x = 100 + this.simpleNoise(i, 1) * (WORLD.width - 200);
       const y = 100 + this.simpleNoise(i, 2) * (WORLD.height - 200);
 
-      // Don't spawn too close to center (player spawn)
       const dx = x - WORLD.width / 2;
       const dy = y - WORLD.height / 2;
       if (dx * dx + dy * dy < 200 * 200) continue;
@@ -99,10 +91,10 @@ class Obstacle {
 
     if (type === 'rock') {
       this.size = 30 + Math.random() * 20;
-      this.color = '#666666';
+      this.color = '#4a4a6a';
     } else {
       this.size = 40;
-      this.color = '#1a5a1a';
+      this.color = '#0f3460';
     }
   }
 
@@ -112,20 +104,20 @@ class Obstacle {
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#777777';
+      ctx.fillStyle = '#5a5a7a';
       ctx.beginPath();
       ctx.arc(this.x - 5, this.y - 5, this.size / 3, 0, Math.PI * 2);
       ctx.fill();
     } else {
       // Tree trunk
-      ctx.fillStyle = '#4a3020';
+      ctx.fillStyle = '#533483';
       ctx.fillRect(this.x - 5, this.y, 10, 20);
       // Tree top
       ctx.fillStyle = this.color;
       ctx.beginPath();
       ctx.arc(this.x, this.y - 10, this.size / 2, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#2a7a2a';
+      ctx.fillStyle = '#1a4470';
       ctx.beginPath();
       ctx.arc(this.x - 8, this.y - 15, this.size / 3, 0, Math.PI * 2);
       ctx.fill();

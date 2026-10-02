@@ -21,6 +21,7 @@ const UI = {
       hudLevel: document.getElementById('hud-level'),
       hudKills: document.getElementById('hud-kills'),
       hudHealthFill: document.getElementById('hud-health-fill'),
+      hudHealthText: document.getElementById('hud-health-text'),
       hudXpFill: document.getElementById('hud-xp-fill'),
       hudWeapons: document.getElementById('hud-weapons'),
       bossBar: document.getElementById('boss-bar'),
@@ -32,6 +33,8 @@ const UI = {
       serverList: document.getElementById('server-list'),
       lobbyInfo: document.getElementById('lobby-info'),
       lobbyPlayers: document.getElementById('lobby-players'),
+      comboDisplay: document.getElementById('combo-display'),
+      fpsDisplay: document.getElementById('fps-display'),
     };
   },
 
@@ -68,11 +71,14 @@ const UI = {
     this.elements.hudLevel.textContent = `Lv ${player.level}`;
 
     // Kills
-    this.elements.hudKills.textContent = `${Engine.kills} kills`;
+    this.elements.hudKills.textContent = `${Engine.kills}`;
 
     // Health
-    const healthPercent = (player.hp / player.maxHp) * 100;
+    const healthPercent = Math.max(0, (player.hp / player.maxHp) * 100);
     this.elements.hudHealthFill.style.width = `${healthPercent}%`;
+    if (this.elements.hudHealthText) {
+      this.elements.hudHealthText.textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+    }
 
     // XP
     const xpPercent = (player.xp / player.xpToNext) * 100;
@@ -86,6 +92,21 @@ const UI = {
       const boss = Engine.bossActive;
       const bossPercent = (boss.hp / boss.maxHp) * 100;
       this.elements.bossHealthFill.style.width = `${bossPercent}%`;
+    }
+
+    // Combo
+    if (this.elements.comboDisplay) {
+      if (Engine.combo > 1) {
+        this.elements.comboDisplay.textContent = `${Engine.combo}x COMBO`;
+        this.elements.comboDisplay.style.opacity = Math.min(1, Engine.comboTimer);
+      } else {
+        this.elements.comboDisplay.style.opacity = 0;
+      }
+    }
+
+    // FPS
+    if (this.elements.fpsDisplay) {
+      this.elements.fpsDisplay.textContent = `${Engine.fps} FPS`;
     }
   },
 
@@ -131,12 +152,15 @@ const UI = {
     const seconds = Math.floor(Engine.matchTime % 60);
 
     let html = `
-      <div class="stat"><span class="stat-label">Survival Time:</span> <span class="stat-value">${minutes}:${seconds.toString().padStart(2, '0')}</span></div>
-      <div class="stat"><span class="stat-label">Level:</span> <span class="stat-value">${player.level}</span></div>
-      <div class="stat"><span class="stat-label">Enemies Defeated:</span> <span class="stat-value">${Engine.kills}</span></div>
-      <div class="stat"><span class="stat-label">Damage Dealt:</span> <span class="stat-value">${Engine.damageDealt}</span></div>
-      <div class="stat"><span class="stat-label">Boss Kills:</span> <span class="stat-value">${Engine.bossKills}</span></div>
-      <div class="stat"><span class="stat-label">Upgrades:</span> <span class="stat-value">${Object.keys(player.upgradeLevels || {}).length}</span></div>
+      <div class="stat-grid">
+        <div class="stat"><span class="stat-label">Survival Time</span> <span class="stat-value">${minutes}:${seconds.toString().padStart(2, '0')}</span></div>
+        <div class="stat"><span class="stat-label">Level</span> <span class="stat-value">${player.level}</span></div>
+        <div class="stat"><span class="stat-label">Enemies Defeated</span> <span class="stat-value">${Engine.kills}</span></div>
+        <div class="stat"><span class="stat-label">Damage Dealt</span> <span class="stat-value">${Engine.damageDealt}</span></div>
+        <div class="stat"><span class="stat-label">Boss Kills</span> <span class="stat-value">${Engine.bossKills}</span></div>
+        <div class="stat"><span class="stat-label">Max Combo</span> <span class="stat-value">${Engine.maxCombo}x</span></div>
+        <div class="stat"><span class="stat-label">Upgrades</span> <span class="stat-value">${Object.keys(player.upgradeLevels || {}).length}</span></div>
+      </div>
     `;
 
     this.elements.gameOverStats.innerHTML = html;
@@ -209,7 +233,6 @@ const UI = {
     html += '</div>';
     this.elements.lobbyPlayers.innerHTML = html;
 
-    // Show/hide start button
     const startBtn = document.getElementById('btn-start-game');
     if (isHost) {
       startBtn.classList.remove('hidden');

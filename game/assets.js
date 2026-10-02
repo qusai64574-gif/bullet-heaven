@@ -1,11 +1,11 @@
 // assets.js - Asset loading and animation system
+
 const Assets = {
   images: {},
   loaded: false,
   totalAssets: 0,
   loadedCount: 0,
 
-  // Asset definitions - using Kenney assets (CC0)
   definitions: {
     player_idle: { file: 'assets/player_idle.png', frameW: 64, frameH: 64, fps: 8 },
     player_run: { file: 'assets/player_run.png', frameW: 64, frameH: 64, fps: 10 },
@@ -46,7 +46,6 @@ const Assets = {
           resolve();
         };
         img.onerror = () => {
-          // Create fallback colored rectangle
           const canvas = document.createElement('canvas');
           canvas.width = def.frameW * 4;
           canvas.height = def.frameH;
@@ -81,12 +80,10 @@ const Assets = {
     });
   },
 
-  // Universal animation drawing function
   drawAnim(ctx, name, x, y, time, flip, scale) {
     scale = scale || 1;
     const asset = this.images[name];
     if (!asset) {
-      // Fallback: draw colored circle
       ctx.fillStyle = '#888';
       ctx.beginPath();
       ctx.arc(x, y, 10 * scale, 0, Math.PI * 2);
@@ -111,7 +108,6 @@ const Assets = {
     ctx.restore();
   },
 
-  // Draw static image (no animation)
   drawStatic(ctx, name, x, y, w, h) {
     const asset = this.images[name];
     if (!asset) {
@@ -125,7 +121,6 @@ const Assets = {
     ctx.restore();
   },
 
-  // Get icon from sprite sheet
   getIcon(ctx, name, iconIndex, x, y, size) {
     const asset = this.images[name];
     if (!asset) {

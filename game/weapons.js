@@ -25,9 +25,9 @@ class Projectile {
 
     // Trail
     this.trail.push({ x: this.x, y: this.y, alpha: 1 });
-    if (this.trail.length > 5) this.trail.shift();
+    if (this.trail.length > 8) this.trail.shift();
     for (const t of this.trail) {
-      t.alpha -= dt * 3;
+      t.alpha -= dt * 4;
     }
 
     // Check bounds
@@ -41,7 +41,6 @@ class Projectile {
     // Check collision with enemies
     for (const enemy of Engine.enemies) {
       if (enemy.hp <= 0 || this.hitEnemies.has(enemy)) continue;
-
       const dx = enemy.x - this.x;
       const dy = enemy.y - this.y;
       const distSq = dx * dx + dy * dy;
@@ -62,28 +61,34 @@ class Projectile {
   }
 
   draw(ctx) {
-    // Trail
+    // Trail with additive blending
+    ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < this.trail.length; i++) {
       const t = this.trail[i];
       if (t.alpha <= 0) continue;
-      ctx.globalAlpha = t.alpha * 0.5;
+      ctx.globalAlpha = t.alpha * 0.4;
       ctx.fillStyle = this.color;
       ctx.beginPath();
       ctx.arc(t.x, t.y, this.size / 2 * t.alpha, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
 
-    // Projectile
+    // Projectile glow
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 15;
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Glow
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 10;
+    // Bright core
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size / 4, 0, Math.PI * 2);
     ctx.fill();
+
     ctx.shadowBlur = 0;
   }
 }
@@ -113,7 +118,6 @@ class EnemyProjectile {
       return;
     }
 
-    // Check collision with player
     const player = Engine.player;
     if (player) {
       const dx = player.x - this.x;
@@ -130,13 +134,18 @@ class EnemyProjectile {
 
   draw(ctx) {
     ctx.fillStyle = this.color;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 8;
+    // Bright core
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size / 4, 0, Math.PI * 2);
     ctx.fill();
+
     ctx.shadowBlur = 0;
   }
 }
@@ -166,11 +175,10 @@ class XPGem {
 
     // Magnet effect
     if (dist < player.magnetRange) {
-      this.magnetSpeed = 300 * (1 - dist / player.magnetRange);
+      this.magnetSpeed = 400 * (1 - dist / player.magnetRange);
       this.x += (dx / dist) * this.magnetSpeed * dt;
       this.y += (dy / dist) * this.magnetSpeed * dt;
     } else {
-      // Drift
       this.x += this.vx * dt;
       this.y += this.vy * dt;
       this.vx *= 0.95;
@@ -184,11 +192,29 @@ class XPGem {
 
       // XP effect
       Engine.addFloatingText(this.x, this.y - 10, `+${this.value} XP`, '#44ff44', 0.8);
+
+      // Collect particles
+      for (let i = 0; i < 4; i++) {
+        Engine.particles.push(new Particle(
+          this.x, this.y,
+          (Math.random() - 0.5) * 100,
+          (Math.random() - 0.5) * 100,
+          '#44ff44', 0.3, 2
+        ));
+      }
     }
   }
 
   draw(ctx) {
     const bob = Math.sin(this.animTime * 3) * 3;
-    Assets.drawAnim(ctx, 'xp_gem', this.x, this.y + bob, this.animTime, false, 0.8);
+    const pulse = 1 + Math.sin(this.animTime * 5) * 0.1;
+
+    // Glow
+    ctx.shadowColor = '#44ff44';
+    ctx.shadowBlur = 10;
+
+    Assets.drawAnim(ctx, 'xp_gem', this.x, this.y + bob, this.animTime, false, 0.8 * pulse);
+
+    ctx.shadowBlur = 0;
   }
 }
