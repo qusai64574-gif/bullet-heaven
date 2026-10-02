@@ -181,6 +181,171 @@ function setupMenuButtons() {
     UI.hideHUD();
     UI.showScreen('mainMenu');
   });
+
+  // Admin panel
+  setupAdminPanel();
+}
+
+// ─── Admin Panel ───
+const AdminPanel = {
+  open: false,
+
+  toggle() {
+    this.open = !this.open;
+    const panel = document.getElementById('admin-panel');
+    if (this.open) {
+      panel.classList.remove('hidden');
+      this.refreshStats();
+      this.refreshWeapons();
+    } else {
+      panel.classList.add('hidden');
+    }
+  },
+
+  close() {
+    this.open = false;
+    document.getElementById('admin-panel').classList.add('hidden');
+  },
+
+  refreshStats() {
+    const p = Engine.player;
+    if (!p) return;
+    document.getElementById('admin-level').textContent = p.level;
+    document.getElementById('admin-hp').textContent = `${Math.ceil(p.hp)}/${p.maxHp}`;
+    document.getElementById('admin-dmg-mult').textContent = p.damageMultiplier.toFixed(1) + 'x';
+    document.getElementById('admin-spd-mult').textContent = p.speedMultiplier.toFixed(1) + 'x';
+  },
+
+  refreshWeapons() {
+    const p = Engine.player;
+    const container = document.getElementById('admin-weapons');
+    if (!p) {
+      container.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">Start a game first</span>';
+      return;
+    }
+    let html = '';
+    for (const [id, w] of Object.entries(WEAPONS)) {
+      const active = p.weapons.some(pw => pw.id === id) ? 'active' : '';
+      html += `<button class="admin-weapon-btn ${active}" onclick="AdminPanel.giveWeapon('${id}')">${w.icon} ${w.name}</button>`;
+    }
+    container.innerHTML = html;
+  },
+
+  giveWeapon(weaponId) {
+    const p = Engine.player;
+    if (!p) return;
+    const weaponData = WEAPONS[weaponId];
+    if (!weaponData) return;
+    // Remove existing non-evolution weapons, keep evolutions
+    p.weapons = p.weapons.filter(w => w.evolution);
+    p.weapons.push({
+      ...weaponData,
+      level: 1,
+      cooldown: 0,
+      orbitAngle: 0,
+    });
+    Engine.addFloatingText(p.x, p.y - 40, weaponData.name + '!', weaponData.color, 1.5);
+    this.refreshWeapons();
+  },
+
+  setup() {
+    // Toggle with backslash
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '\\') {
+        e.preventDefault();
+        this.toggle();
+      }
+      if (e.key === 'Escape' && this.open) {
+        this.close();
+      }
+    });
+
+    // Close button
+    document.getElementById('admin-close').addEventListener('click', () => this.close());
+
+    // God mode toggles
+    document.getElementById('admin-op-health').addEventListener('change', (e) => {
+      const p = Engine.player;
+      if (!p) return;
+      if (e.target.checked) {
+        p.maxHp = 999999;
+        p.hp = 999999;
+        p.armorMultiplier = 0;
+      } else {
+        p.maxHp = 100;
+        p.hp = 100;
+        p.armorMultiplier = 1;
+      }
+      this.refreshStats();
+    });
+
+    document.getElementById('admin-op-damage').addEventListener('change', (e) => {
+      const p = Engine.player;
+      if (!p) return;
+      p.damageMultiplier = e.target.checked ? 1000 : 1;
+      this.refreshStats();
+    });
+
+    document.getElementById('admin-op-everything').addEventListener('change', (e) => {
+      const p = Engine.player;
+      if (!p) return;
+      if (e.target.checked) {
+        p.maxHp = 999999;
+        p.hp = 999999;
+        p.armorMultiplier = 0;
+        p.damageMultiplier = 1000;
+        p.speedMultiplier = 3;
+        p.magnetRange = 9999;
+        document.getElementById('admin-op-health').checked = true;
+        document.getElementById('admin-op-damage').checked = true;
+      } else {
+        p.maxHp = 100;
+        p.hp = 100;
+        p.armorMultiplier = 1;
+        p.damageMultiplier = 1;
+        p.speedMultiplier = 1;
+        p.magnetRange = 100;
+        document.getElementById('admin-op-health').checked = false;
+        document.getElementById('admin-op-damage').checked = false;
+      }
+      this.refreshStats();
+    });
+
+    // Action buttons
+    document.getElementById('admin-heal').addEventListener('click', () => {
+      const p = Engine.player;
+      if (!p) return;
+      p.hp = p.maxHp;
+      Engine.addFloatingText(p.x, p.y - 30, 'HEALED!', '#00ff88', 1.5);
+      this.refreshStats();
+    });
+
+    document.getElementById('admin-max-level').addEventListener('click', () => {
+      const p = Engine.player;
+      if (!p) return;
+      p.level = 99;
+      p.xp = 0;
+      p.xpToNext = XP_CURVE(99);
+      Engine.addFloatingText(p.x, p.y - 30, 'LEVEL 99!', '#ffd700', 2);
+      this.refreshStats();
+    });
+
+    document.getElementById('admin-kill-all').addEventListener('click', () => {
+      for (const enemy of Engine.enemies) {
+        enemy.hp = 0;
+      }
+      Engine.addFloatingText(Engine.player.x, Engine.player.y - 30, 'ALL KILLED!', '#ff0044', 2);
+    });
+
+    document.getElementById('admin-spawn-boss').addEventListener('click', () => {
+      Engine.bossTimer = Engine.bossSpawnInterval;
+      Engine.addFloatingText(Engine.player.x, Engine.player.y - 30, 'BOSS INCOMING!', '#ff0044', 2);
+    });
+  }
+};
+
+function setupAdminPanel() {
+  AdminPanel.setup();
 }
 
 function startOfflineGame() {

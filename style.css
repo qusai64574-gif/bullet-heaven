@@ -1296,3 +1296,262 @@ h2 {
     border-width: 3px;
   }
 }
+
+/* ─── Admin Panel ─── */
+#admin-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  max-height: 80vh;
+  background: rgba(5, 5, 20, 0.95);
+  border: 2px solid var(--neon-purple);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: adminPanelIn 0.3s ease;
+}
+
+@keyframes adminPanelIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.admin-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--neon-purple);
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+  letter-spacing: 0.15em;
+  margin: 0;
+}
+
+.admin-close-btn {
+  background: none;
+  border: 1px solid var(--neon-red);
+  color: var(--neon-red);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.admin-close-btn:hover {
+  background: rgba(255, 51, 102, 0.2);
+  box-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+}
+
+.admin-content {
+  padding: 1rem 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.admin-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-content::-webkit-scrollbar-thumb {
+  background: var(--neon-purple);
+  border-radius: 2px;
+}
+
+.admin-section {
+  margin-bottom: 1.2rem;
+}
+
+.admin-section h4 {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.admin-toggle:hover {
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.admin-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  width: 40px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  position: relative;
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all var(--transition-normal);
+}
+
+.admin-toggle input[type="checkbox"]:checked + .toggle-slider {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.admin-toggle input[type="checkbox"]:checked + .toggle-slider::after {
+  left: 22px;
+  background: var(--neon-green);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+.toggle-label {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.admin-weapons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.admin-weapon-btn {
+  padding: 0.5rem 0.6rem;
+  background: var(--bg-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: center;
+}
+
+.admin-weapon-btn:hover {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.admin-weapon-btn.active {
+  border-color: var(--neon-green);
+  background: rgba(0, 255, 136, 0.15);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  color: var(--neon-green);
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.admin-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  background: var(--bg-glass);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-stat .stat-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.admin-stat .stat-value {
+  color: var(--neon-yellow);
+  font-weight: 600;
+  font-size: 0.8rem;
+  font-family: var(--font-display);
+}
+
+.admin-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.admin-btn {
+  padding: 0.5rem 0.6rem;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--neon-purple);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+  transform: translateY(-1px);
+}
+
+.admin-btn:active {
+  transform: translateY(0);
+}
+
+.admin-footer {
+  padding: 0.6rem 1.5rem;
+  border-top: 1px solid rgba(168, 85, 247, 0.2);
+  text-align: center;
+}
+
+.admin-footer span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}

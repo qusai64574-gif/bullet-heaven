@@ -246,6 +246,71 @@
       <span class="status-text" id="status-text">Disconnected</span>
     </div>
 
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="hidden" role="dialog" aria-label="Admin Panel">
+      <div class="admin-header">
+        <h3>ADMIN PANEL</h3>
+        <button id="admin-close" class="admin-close-btn" aria-label="Close admin panel">X</button>
+      </div>
+      <div class="admin-content">
+        <div class="admin-section">
+          <h4>GOD MODE</h4>
+          <label class="admin-toggle">
+            <input type="checkbox" id="admin-op-health">
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">OP Health (Invincible)</span>
+          </label>
+          <label class="admin-toggle">
+            <input type="checkbox" id="admin-op-damage">
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">OP Damage (One-shot kill)</span>
+          </label>
+          <label class="admin-toggle">
+            <input type="checkbox" id="admin-op-everything">
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">OP Everything (All cheats)</span>
+          </label>
+        </div>
+        <div class="admin-section">
+          <h4>WEAPON SELECT</h4>
+          <div class="admin-weapons" id="admin-weapons"></div>
+        </div>
+        <div class="admin-section">
+          <h4>PLAYER STATS</h4>
+          <div class="admin-stats">
+            <div class="admin-stat">
+              <span class="stat-label">Level:</span>
+              <span class="stat-value" id="admin-level">1</span>
+            </div>
+            <div class="admin-stat">
+              <span class="stat-label">HP:</span>
+              <span class="stat-value" id="admin-hp">100/100</span>
+            </div>
+            <div class="admin-stat">
+              <span class="stat-label">Damage Mult:</span>
+              <span class="stat-value" id="admin-dmg-mult">1.0x</span>
+            </div>
+            <div class="admin-stat">
+              <span class="stat-label">Speed Mult:</span>
+              <span class="stat-value" id="admin-spd-mult">1.0x</span>
+            </div>
+          </div>
+        </div>
+        <div class="admin-section">
+          <h4>GAME</h4>
+          <div class="admin-buttons">
+            <button class="admin-btn" id="admin-heal">FULL HEAL</button>
+            <button class="admin-btn" id="admin-max-level">MAX LEVEL</button>
+            <button class="admin-btn" id="admin-kill-all">KILL ALL</button>
+            <button class="admin-btn" id="admin-spawn-boss">SPAWN BOSS</button>
+          </div>
+        </div>
+      </div>
+      <div class="admin-footer">
+        <span>Press \ to toggle</span>
+      </div>
+    </div>
+
   </div>
 
   <script src="game/assets.js"></script>
