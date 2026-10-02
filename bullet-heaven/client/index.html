@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bullet Heaven</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Main Menu -->
+  <div id="main-menu" class="screen">
+    <h1 class="game-title">BULLET HEAVEN</h1>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-play-offline">PLAY OFFLINE</button>
+      <button class="menu-btn" id="btn-play-online">PLAY ONLINE</button>
+      <button class="menu-btn" id="btn-settings">SETTINGS</button>
+      <button class="menu-btn" id="btn-exit">EXIT</button>
+    </div>
+  </div>
+
+  <!-- Online Menu -->
+  <div id="online-menu" class="screen hidden">
+    <h2>ONLINE</h2>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-host">HOST GAME</button>
+      <button class="menu-btn" id="btn-join">JOIN GAME</button>
+      <button class="menu-btn" id="btn-servers">SERVERS</button>
+      <button class="menu-btn" id="btn-online-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- Host Form -->
+  <div id="host-form" class="screen hidden">
+    <h2>HOST GAME</h2>
+    <div class="form-group">
+      <label>Server Name</label>
+      <input type="text" id="host-name" value="My Server" maxlength="30">
+    </div>
+    <div class="form-group">
+      <label>Max Players</label>
+      <select id="host-max">
+        <option value="2">2</option>
+        <option value="4" selected>4</option>
+        <option value="6">6</option>
+        <option value="8">8</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Map Seed</label>
+      <input type="text" id="host-seed" value="" placeholder="Random">
+    </div>
+    <div class="form-group">
+      <label>Visibility</label>
+      <select id="host-visibility">
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+      </select>
+    </div>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-create-server">CREATE SERVER</button>
+      <button class="menu-btn" id="btn-host-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- Join Form -->
+  <div id="join-form" class="screen hidden">
+    <h2>JOIN GAME</h2>
+    <div class="form-group">
+      <label>Server Code</label>
+      <input type="text" id="join-code" placeholder="AB7K92" maxlength="6" style="text-transform:uppercase">
+    </div>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-join-server">JOIN</button>
+      <button class="menu-btn" id="btn-join-back">BACK</button>
+    </div>
+    <div id="join-error" class="error-msg"></div>
+  </div>
+
+  <!-- Server Browser -->
+  <div id="server-browser" class="screen hidden">
+    <h2>SERVERS</h2>
+    <div id="server-list"></div>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-refresh-servers">REFRESH</button>
+      <button class="menu-btn" id="btn-servers-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- Lobby -->
+  <div id="lobby" class="screen hidden">
+    <h2>LOBBY</h2>
+    <div id="lobby-info"></div>
+    <div id="lobby-players"></div>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-ready">READY</button>
+      <button class="menu-btn hidden" id="btn-start-game">START GAME</button>
+      <button class="menu-btn" id="btn-leave-lobby">LEAVE</button>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div id="settings-screen" class="screen hidden">
+    <h2>SETTINGS</h2>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="settings-username" maxlength="16">
+    </div>
+    <div class="form-group">
+      <label>Server URL</label>
+      <input type="text" id="settings-server-url" placeholder="ws://localhost:3000">
+    </div>
+    <div class="form-group">
+      <label>Volume</label>
+      <input type="range" id="settings-volume" min="0" max="100" value="70">
+    </div>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-save-settings">SAVE</button>
+      <button class="menu-btn" id="btn-settings-back">BACK</button>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="hud-top">
+      <div id="hud-timer">00:00</div>
+      <div id="hud-level">Lv 1</div>
+      <div id="hud-kills">0</div>
+    </div>
+    <div id="hud-health-bar"><div id="hud-health-fill"></div></div>
+    <div id="hud-xp-bar"><div id="hud-xp-fill"></div></div>
+    <div id="hud-weapons"></div>
+    <div id="boss-bar" class="hidden">
+      <div id="boss-name">BOSS</div>
+      <div id="boss-health-bar"><div id="boss-health-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Level Up -->
+  <div id="level-up" class="screen hidden">
+    <h2>LEVEL UP!</h2>
+    <div id="upgrade-cards"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="screen hidden">
+    <h2>GAME OVER</h2>
+    <div id="game-over-stats"></div>
+    <div class="menu-buttons">
+      <button class="menu-btn" id="btn-restart">RESTART</button>
+      <button class="menu-btn" id="btn-return-menu">MAIN MENU</button>
+    </div>
+  </div>
+
+  <!-- Mobile Controls -->
+  <div id="mobile-controls" class="hidden">
+    <div id="joystick-zone">
+      <div id="joystick-base"><div id="joystick-knob"></div></div>
+    </div>
+  </div>
+
+  <!-- Connection Status -->
+  <div id="connection-status" class="hidden"></div>
+</div>
+
+<script src="game/assets.js"></script>
+<script src="game/data.js"></script>
+<script src="game/engine.js"></script>
+<script src="game/player.js"></script>
+<script src="game/enemies.js"></script>
+<script src="game/weapons.js"></script>
+<script src="game/upgrades.js"></script>
+<script src="game/effects.js"></script>
+<script src="game/world.js"></script>
+<script src="game/ui.js"></script>
+<script src="game/multiplayer.js"></script>
+<script src="game/input.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

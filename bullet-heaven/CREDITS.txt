@@ -1,0 +1,29 @@
+BULLET HEAVEN - ASSET CREDITS
+==============================
+
+Asset Pack: Kenney Assets (CC0)
+Author: Kenney
+URL: https://kenney.nl/assets
+License: CC0 1.0 Universal (Public Domain)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Asset Slots Used:
+- player_idle
+- player_run
+- enemy_1_walk
+- enemy_2_walk
+- enemy_3_walk
+- enemy_4_walk
+- enemy_5_walk
+- boss
+- projectile
+- xp_gem
+- hit_effect
+- explosion_effect
+- floor_tile
+- upgrade_icons
+
+All assets are used under CC0 license.
+No attribution required, but appreciated.
+
+If any assets are replaced, update this file with correct information.
